@@ -27,14 +27,16 @@ child(C,P) :- father(P,C); mother(P,C).
 siblings(X,Y):- child(X,Z), child(Y,Z), X \= Y.
 
 /** Problem 11 **/
-%Transition relation:
+% Transition relation:
 transition(q0,q1,a).
 transition(q1,q2,b).
 transition(q0,q3,a).
 transition(q3,q3,a).
 
-%Accepting States:
+% Accepting states:
 accepting(q2).
 accepting(q3).
 
-%accepts(State, InputList) :- ...
+accepts(State, []) :- accepting(State).
+accepts(State,[H|T]) :- transition(State, State2, H),
+						accepts(State2, T).

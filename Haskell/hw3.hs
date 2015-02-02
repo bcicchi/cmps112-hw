@@ -4,6 +4,7 @@
 	HW3 done solo
 -}
 import Data.List
+import Data.Char
 
 data BST k v = Empty |
 			Node k v (BST k v) (BST k v)
@@ -63,5 +64,4 @@ instance Json Double where
 	
 instance (Json a) => Json [a] where
 	toJson xs = JArr $ map toJson xs
-	fromJson xs = []--map fromJson xs
-	
+	fromJson (JArr xs) = map fromJson xs
