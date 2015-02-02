@@ -22,7 +22,7 @@
 
 -- main function to convert number to word representation
 sayNum :: String -> String
-sayNum x = unwords $ reverse $ addBig (map convert (group (trim x)))
+sayNum x = unwords $ reverse $ addBig $ map convert $ group $ trim x
 
 ------------------------------ Helper Functions ------------------------------
 -- group reversed numbers into groups of 3 where the last group <= 3
