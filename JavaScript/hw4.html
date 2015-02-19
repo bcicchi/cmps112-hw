@@ -1,0 +1,230 @@
+<!--
+	Program: hw4.html
+	Author: Brendan Cicchi - bcicchi - 1361334
+	HW4 - done solo
+-->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>HW4</title><meta charset="utf-8">
+	<style>
+		body,div { background-color: #eee; font-family: sans; padding: 1em; }
+		.d6 { font-size: 100px;}
+	</style>
+	
+	<script>
+	
+	</script>
+</head>
+<body>
+	<form action="#">
+		<input type="text" id="from" />
+		<select id="fromUnit">
+			<option value="c">Celsius</option>
+			<option value="f">Fahrenheit</option>
+			<option value="k">Kelvin</option>
+		</select>
+			=
+		<input type="text" id="to" /> 
+		<select id="toUnit">
+			<option value="c">Celsius</option>
+			<option value="f">Fahrenheit</option>
+			<option value="k">Kelvin</option>
+		</select>
+	</form>
+	<div>
+		<button id="restart" onClick="restart()">Restart</button>
+		<p id="score">Score: _ (_ dice with _ dots each)</p>
+		<p id="rolls">_ rolls left</p>
+		<div id="dice"></div>
+	</div>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js">
+	</script>
+	<!-- problems 1-5 -->
+	<script>
+		$(function() {
+			$("#fromUnit,#toUnit").change(function() {
+				$("#from").trigger("keyup");
+			});
+			$("#from").keyup(function() {
+				$("#to").val(convertTemp($("#from").val(),"#fromUnit","#toUnit"));
+			});
+			$("#to").keyup(function() {
+				$("#from").val(convertTemp($("#to").val(),"#toUnit","#fromUnit"));
+			});
+		});
+		
+		function convertTemp(t, from, to) {
+			if ($(to).val() === "f" && $(from).val() === "c")
+				return c2f(t);
+			else if ($(to).val() === "k" && $(from).val() === "c")
+				return c2k(t);
+			else if ($(to).val() === "c" && $(from).val() === "k")
+				return k2c(t);
+			else if ($(to).val() === "f" && $(from).val() === "k")
+				return k2c(f2c(t));
+			else if ($(to).val() === "c" && $(from).val() === "f")
+				return f2c(t);
+			else if ($(to).val() === "k" && $(from).val() === "f")
+				return c2f(k2c(t));
+			else
+				return t;
+		}
+		// Temperature conversion functions
+		function c2f(t){ return Math.round(parseInt(t) * 9 / 5 + 32); }
+		function f2c(t){ return Math.round((parseInt(t) - 32) * 5 / 9); }
+		function c2k(t){ return parseInt(t) + 273; }
+		function k2c(t){ return parseInt(t) - 273; }
+	</script>
+	
+	<script>
+		// problem 5
+		function randInt(min, max) {
+			return Math.floor(Math.random() * (max - min + 1) + min);
+		}
+		
+		// problem 6
+		function createDice(n) {
+			return function() { return randInt(1,n); }
+		}
+		
+		// die used for Dice and YahtzyDice
+		var d6 = createDice(6);
+		// die used for UnFairDice
+		var d12 = createDice(12);
+		
+		// constructor, initially sets dice to 
+		function Dice() {
+			this.last_roll = d6();
+			this.icons = "⚀⚁⚂⚃⚄⚅";
+			this.el = $("<span class='d6'></span>").text(this.icons[this.last_roll-1]);
+			var dice = this;
+			this.el.click(function() { 
+				dice.roll();
+			});
+		}
+		
+		// renders the individual die's roll
+		Dice.prototype.render = function(f) {
+			this.el = this.el.text(this.icons[f-1]);
+			this.last_roll = f;
+		}
+		
+		// rolls this die and updates the representation
+		Dice.prototype.roll = function() {
+			this.render(d6());
+		}
+		
+		// problem 9
+		UnFairDice.prototype = new Dice();
+		function UnFairDice() { Dice.call(this); }
+		UnFairDice.prototype.roll = function() {
+			face = d12();
+			if ( face > 6) 
+				face = 6;
+			this.render(face);
+		}
+		
+		// problem 10
+		YahtzyDice.prototype = new Dice();
+		function YahtzyDice() { Dice.call(this); }
+		
+		// update roll function to change the rolls_left, alert user when out
+		YahtzyDice.prototype.roll = function() {
+			if (rolls_left >= 0) {
+				this.last_roll = d6();
+				this.render(this.last_roll);
+				//dec_rolls_left();
+				calc_score();
+			}
+			else
+				alert("You are out of rolls. Restart the game to try again.");
+		}
+		
+		// declare number of rolls left till end of game
+		var rolls_left = 5;
+		// array to contain the game dice
+		var game_dice = [];
+		
+		// create dice and update rolls and score when page is ready
+		$(function() {
+			for (i = 0; i < 5; i++){
+				game_dice[i] = new YahtzyDice();
+				$("#dice").append(game_dice[i].el);
+			}
+			calc_score();
+		});
+		
+		// decrement rolls left and display
+		function dec_rolls_left() {
+			rolls_left--;
+		}
+		
+		// calculate the score
+		function calc_score(){
+			var max_index = 0;
+			var arr = [0,0,0,0,0,0];
+			for( i = 0; i < game_dice.length; i++ ) {
+				curr_index = (game_dice[i]).last_roll - 1;
+				arr[curr_index]++;
+				if (arr[max_index] < arr[curr_index] )
+					max_index = curr_index;
+				else if (arr[max_index] === arr[curr_index]) {
+					if (curr_index > max_index)
+						max_index = curr_index;
+				}
+			}
+			display_score(max_index + 1, arr[max_index]);
+		}
+		
+		// display score accounting for correct grammar
+		function display_score(face, max) {
+			if(face === 1)
+				$("#score").text("Score: " + max * face + " ("
+					+ max + " dice with " + face + " dot each)");
+			else
+				$("#score").text("Score: " + max * face + " ("
+					+ max + " dice with " + face + " dots each)");
+			if(rolls_left === 1)
+				$("#rolls").text(rolls_left-- + " roll left");
+			else
+				$("#rolls").text(rolls_left-- + " rolls left");
+		}
+		
+		// handle button clicks for restart
+		function restart() {
+			$("#dice").text("");
+			rolls_left = 5;
+			for (i = 0; i < game_dice.length; i++) {
+				game_dice[i] = new YahtzyDice();
+				$("#dice").append(game_dice[i].el);
+			}
+			calc_score();
+		}
+	
+		// problem 11 Extra Credit style
+		// memoize function which caches answers so that function is not repeated
+		// had help from: http://qntm.org/fib for the extra credit working
+		// but essentially, I am creating a cache which I store values to 
+		// if they don't yet exist
+		
+		
+		function memoize( f ){
+			var cache = {};			
+			return function (x) {
+				if (!cache.hasOwnProperty(x))
+					cache[x] = f(x);
+				return cache[x];
+			};
+		};
+		var fib = function (n) { return n == 0 ? 1 : n ==1 ? 1 : fib(n-1) + fib(n-2); }
+		function square(x) { alert("computed sq " + x); return x * x; }
+		msq = memoize(square)
+		var c = 0;
+		var fac = memoize(function f(n) { c++; return n < 2 ? 1 : n * f(n - 1); })
+		var i = 0;
+		var myFib = memoize(function g(n) {i++; return n < 2 ? 1 : g(n-1) + g(n-2);})
+	</script>
+</body>
+</html>
