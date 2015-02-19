@@ -203,13 +203,12 @@
 			calc_score();
 		}
 	
-		// problem 11 Extra Credit style
+		// problem 11
 		// memoize function which caches answers so that function is not repeated
-		// had help from: http://qntm.org/fib for the extra credit working
+		// had help from: http://qntm.org/fib
+		// the extra credit was not working
 		// but essentially, I am creating a cache which I store values to 
 		// if they don't yet exist
-		
-		
 		function memoize( f ){
 			var cache = {};			
 			return function (x) {
@@ -218,13 +217,6 @@
 				return cache[x];
 			};
 		};
-		var fib = function (n) { return n == 0 ? 1 : n ==1 ? 1 : fib(n-1) + fib(n-2); }
-		function square(x) { alert("computed sq " + x); return x * x; }
-		msq = memoize(square)
-		var c = 0;
-		var fac = memoize(function f(n) { c++; return n < 2 ? 1 : n * f(n - 1); })
-		var i = 0;
-		var myFib = memoize(function g(n) {i++; return n < 2 ? 1 : g(n-1) + g(n-2);})
 	</script>
 </body>
 </html>
